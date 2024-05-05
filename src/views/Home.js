@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import firestore from '@react-native-firebase/firestore';
@@ -8,19 +8,37 @@ export function TodoListApp() {
     const navigation = useNavigation();
     const [todos, setTodos] = useState([]);
     const [text, setText] = useState('');
-    const [editingId, setEditingId] = useState(null);
-    const [editingText, setEditingText] = useState('');
+
+    useEffect(() => {
+        const unsubscribe = firestore().collection('todos')
+            .onSnapshot((querySnapshot) => {
+                const todos = [];
+                querySnapshot.forEach((doc) => {
+                    todos.push({ id: doc.id, ...doc.data() });
+                });
+                setTodos(todos);
+            });
+        return () => unsubscribe();
+    }, []);
 
     const addTodo = async () => {
         if (text.trim()) {
             const todoData = {
-                text: text,
-                completed: false
+                title: text,
+                description: '',
+                priority: 'Medium',
+                dueDate: null,
+                completed: false,
+                createdAt: new Date(),
+                lastModifiedAt: new Date(),
+                assignedTo: '',
+                tags: [],
+                attachments: []
             };
 
             try {
-                await firestore().collection('todo').doc('lxZjPFK1r18CJzqiaH7h').collection('items').add(todoData);
-                setTodos([...todos, { id: Date.now(), text: text }]);
+                const docRef = await firestore().collection('todos').add(todoData);
+                console.log('Todo added successfully with ID: ', docRef.id);
                 setText('');
             } catch (error) {
                 console.error('Error adding todo: ', error);
@@ -30,58 +48,18 @@ export function TodoListApp() {
 
     const removeTodo = async (id) => {
         try {
-            await firestore().collection('todo').doc('lxZjPFK1r18CJzqiaH7h').collection('items').doc(id.toString()).delete();
-            setTodos(todos.filter(todo => todo.id !== id));
+            await firestore().collection('todos').doc(id).delete();
         } catch (error) {
             console.error('Error removing todo: ', error);
         }
     };
 
-    const startEditing = (id, text) => {
-        setEditingId(id);
-        setEditingText(text);
-    };
-
-    const saveEditing = async () => {
-        try {
-            await firestore().collection('todo').doc('lxZjPFK1r18CJzqiaH7h').collection('items').doc(editingId.toString()).update({ text: editingText });
-            setTodos(todos.map(todo => todo.id === editingId ? { ...todo, text: editingText } : todo));
-            setEditingId(null);
-            setEditingText('');
-        } catch (error) {
-            console.error('Error updating todo: ', error);
-        }
-    };
-
-    const cancelEditing = () => {
-        setEditingId(null);
-        setEditingText('');
-    };
-
     const renderItem = ({ item }) => (
         <View style={styles.todoItem}>
-            {editingId === item.id ? (
-                <View style={styles.editingContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={editingText}
-                        onChangeText={setEditingText}
-                    />
-                    <TouchableOpacity style={styles.saveButton} onPress={saveEditing}>
-                        <Text style={styles.saveButtonText}>Save</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.cancelButton} onPress={cancelEditing}>
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                <TouchableOpacity onPress={() => startEditing(item.id, item.text)}>
-                    <Text>{item.text}</Text>
-                </TouchableOpacity>
-            )}
             <TouchableOpacity onPress={() => removeTodo(item.id)}>
                 <Icon name="times" size={20} color="red" />
             </TouchableOpacity>
+            <Text>{item.title}</Text>
         </View>
     );
 
@@ -102,7 +80,7 @@ export function TodoListApp() {
             <FlatList
                 data={todos}
                 renderItem={renderItem}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={item => item.id}
                 style={styles.list}
             />
         </View>
@@ -155,28 +133,6 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         borderWidth: 1,
         borderColor: '#ccc',
-    },
-    editingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    saveButton: {
-        backgroundColor: 'green',
-        padding: 5,
-        borderRadius: 5,
-        marginLeft: 5,
-    },
-    saveButtonText: {
-        color: '#fff',
-    },
-    cancelButton: {
-        backgroundColor: 'red',
-        padding: 5,
-        borderRadius: 5,
-        marginLeft: 5,
-    },
-    cancelButtonText: {
-        color: '#fff',
     },
 });
 
