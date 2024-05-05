@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "212090960710",
+    "project_id": "todoo-8cf12",
+    "storage_bucket": "todoo-8cf12.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212090960710:android:6557a4f0019e99dd554347",
+        "android_client_info": {
+          "package_name": "com.vvvv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPR9IlYT86uSi-dQpMNRdGNpCzYdDAL_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
