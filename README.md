@@ -1,2 +1,4 @@
-Trần Hùng Tiến 2024802010248 
-Link: https://drive.google.com/file/d/1hhb1ib76RfKcdanuoErLD2gP8J7dzPBK/view?usp=share_link
+
+
+https://github.com/ngokienquoc15302/Ex3/assets/82589543/b499fb92-454b-4b27-9532-122c4419e03a
+
